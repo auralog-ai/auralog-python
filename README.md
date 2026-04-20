@@ -4,10 +4,10 @@ Python SDK for [Auralog](https://auralog.ai) — agentic logging and application
 
 Auralog uses Claude as an on-call engineer: it monitors your logs and errors, alerts you when something's wrong, and opens fix PRs automatically.
 
-[![PyPI version](https://img.shields.io/pypi/v/auralog.svg)](https://pypi.org/project/auralog/)
+[![PyPI version](https://img.shields.io/pypi/v/auralog.svg?label=pypi&color=blue)](https://pypi.org/project/auralog/)
 [![provenance verified](https://img.shields.io/badge/provenance-verified-2dba4e?logo=sigstore&logoColor=white)](https://pypi.org/project/auralog/)
-[![Python versions](https://img.shields.io/pypi/pyversions/auralog.svg)](https://pypi.org/project/auralog/)
-[![license](https://img.shields.io/pypi/l/auralog.svg)](./LICENSE)
+[![Python versions](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue.svg)](https://pypi.org/project/auralog/)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 ## Install
 
