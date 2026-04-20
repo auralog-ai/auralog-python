@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/auralog-ai/auralog-python/security/policy
+    about: Please report vulnerabilities privately — see SECURITY.md
+  - name: Auralog service issue
+    url: https://auralog.ai
+    about: For dashboard, ingest, or billing issues, contact support at auralog.ai
+  - name: Documentation
+    url: https://docs.auralog.ai
+    about: SDK usage guides, concepts, and API reference

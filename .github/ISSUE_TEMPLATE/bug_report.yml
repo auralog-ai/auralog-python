@@ -1,0 +1,63 @@
+name: Bug report
+description: Report a bug in the Auralog Python SDK
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please fill out the sections below.
+
+        For security vulnerabilities, **do not open an issue** — see [SECURITY.md](https://github.com/auralog-ai/auralog-python/blob/main/SECURITY.md).
+
+  - type: input
+    id: sdk-version
+    attributes:
+      label: SDK version
+      description: The version of `auralog` you're using (`pip show auralog`)
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      placeholder: "3.12.1"
+    validations:
+      required: true
+
+  - type: input
+    id: platform
+    attributes:
+      label: Platform / framework
+      description: Standalone script, Django, FastAPI, Celery, AWS Lambda, etc.
+      placeholder: "Django 5.0 on Gunicorn"
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: Code that demonstrates the bug. The smaller the better.
+      render: python
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include error messages and tracebacks if relevant.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
