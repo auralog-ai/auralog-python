@@ -50,7 +50,7 @@ logging.info("payment processed", extra={"order_id": "abc"})
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `api_key` | `str` | _required_ | Your Auralog project API key |
-| `environment` | `str` | _required_ | e.g. `"production"`, `"staging"`, `"dev"` |
+| `environment` | `str` | `"production"` | e.g. `"production"`, `"staging"`, `"dev"` |
 | `endpoint` | `str` | `https://ingest.auralog.ai` | Ingest endpoint override |
 | `flush_interval` | `float` | `5.0` | Seconds between batched flushes (errors flush immediately) |
 | `capture_errors` | `bool` | `True` | Capture uncaught exceptions (main thread, threads, asyncio) |

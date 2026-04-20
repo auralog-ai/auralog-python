@@ -25,7 +25,7 @@ __all__ = ["AuralogHandler", "auralog", "init", "shutdown"]
 def init(
     *,
     api_key: str,
-    environment: str,
+    environment: str = "production",
     endpoint: str = "https://ingest.auralog.ai",
     flush_interval: float = 5.0,
     capture_errors: bool = True,

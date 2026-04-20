@@ -2,12 +2,17 @@ from auralog.config import AuralogConfig
 
 
 def test_config_defaults():
-    cfg = AuralogConfig(api_key="k", environment="prod")
+    cfg = AuralogConfig(api_key="k")
     assert cfg.api_key == "k"
-    assert cfg.environment == "prod"
+    assert cfg.environment == "production"
     assert cfg.endpoint == "https://ingest.auralog.ai"
     assert cfg.flush_interval == 5.0
     assert cfg.capture_errors is True
+
+
+def test_config_environment_override():
+    cfg = AuralogConfig(api_key="k", environment="staging")
+    assert cfg.environment == "staging"
 
 
 def test_config_overrides():
