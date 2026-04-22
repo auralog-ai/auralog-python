@@ -19,7 +19,7 @@ from .handler import AuralogHandler
 from .logger import Logger
 from .transport import Transport
 
-__all__ = ["AuralogHandler", "auralog", "init", "shutdown"]
+__all__ = ["AuralogHandler", "auralog", "get_trace_id", "init", "set_trace_id", "shutdown"]
 
 
 def init(
@@ -29,6 +29,7 @@ def init(
     endpoint: str = "https://ingest.auralog.ai",
     flush_interval: float = 5.0,
     capture_errors: bool = True,
+    trace_id: str | None = None,
 ) -> None:
     """
     Initialize the SDK. Idempotent — calling `init` again replaces the prior config
@@ -42,13 +43,14 @@ def init(
         endpoint=endpoint,
         flush_interval=flush_interval,
         capture_errors=capture_errors,
+        trace_id=trace_id,
     )
     transport = Transport(
         api_key=cfg.api_key,
         endpoint=cfg.endpoint,
         flush_interval=cfg.flush_interval,
     )
-    logger = Logger(environment=cfg.environment, sink=transport.send)
+    logger = Logger(environment=cfg.environment, sink=transport.send, trace_id=cfg.trace_id)
 
     _state.transport = transport
     _state.logger = logger
@@ -76,6 +78,22 @@ def shutdown() -> None:
         _state.transport.shutdown()
         _state.transport = None
     _state.logger = None
+
+
+def _require_logger() -> Logger:
+    if _state.logger is None:
+        raise RuntimeError("auralog.init() must be called before using the logger")
+    return _state.logger
+
+
+def get_trace_id() -> str:
+    """Return the current trace ID. Auto-generated at init unless overridden."""
+    return _require_logger().get_trace_id()
+
+
+def set_trace_id(trace_id: str) -> None:
+    """Replace the current trace ID. Use to propagate an incoming trace ID from another service."""
+    _require_logger().set_trace_id(trace_id)
 
 
 class _AuralogProxy:

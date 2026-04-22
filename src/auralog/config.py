@@ -14,3 +14,4 @@ class AuralogConfig:
     endpoint: str = DEFAULT_ENDPOINT
     flush_interval: float = DEFAULT_FLUSH_INTERVAL_SECONDS
     capture_errors: bool = True
+    trace_id: str | None = None

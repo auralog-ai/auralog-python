@@ -28,6 +28,7 @@ class LogEntry:
     timestamp: str
     metadata: dict[str, Any] | None = None
     stack_trace: str | None = None
+    trace_id: str | None = None
 
     def to_wire(self) -> dict[str, Any]:
         out: dict[str, Any] = {
@@ -40,4 +41,6 @@ class LogEntry:
             out["metadata"] = self.metadata
         if self.stack_trace is not None:
             out["stackTrace"] = self.stack_trace
+        if self.trace_id is not None:
+            out["traceId"] = self.trace_id
         return out

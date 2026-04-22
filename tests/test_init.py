@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 import auralog as al
+from auralog import get_trace_id, set_trace_id
 
 
 def test_auralog_before_init_raises():
@@ -62,3 +63,55 @@ def test_second_init_replaces_previous(httpx_mock):
     # Both endpoints should have been hit (first flushed on shutdown-within-init,
     # second flushed on final shutdown).
     assert "fake" in hosts and "fake2" in hosts
+
+
+def test_get_trace_id_returns_uuid_after_init(httpx_mock):
+    al.init(
+        api_key="k",
+        environment="test",
+        endpoint="http://fake",
+        flush_interval=60.0,
+        capture_errors=False,
+    )
+    try:
+        tid = get_trace_id()
+        assert isinstance(tid, str)
+        assert len(tid) > 0
+    finally:
+        al.shutdown()
+
+
+def test_set_trace_id_changes_trace_id(httpx_mock):
+    al.init(
+        api_key="k",
+        environment="test",
+        endpoint="http://fake",
+        flush_interval=60.0,
+        capture_errors=False,
+    )
+    try:
+        set_trace_id("custom-trace")
+        assert get_trace_id() == "custom-trace"
+    finally:
+        al.shutdown()
+
+
+def test_get_trace_id_throws_before_init():
+    al.shutdown()
+    with pytest.raises(RuntimeError, match="init"):
+        get_trace_id()
+
+
+def test_trace_id_from_config(httpx_mock):
+    al.init(
+        api_key="k",
+        environment="test",
+        endpoint="http://fake",
+        flush_interval=60.0,
+        capture_errors=False,
+        trace_id="config-trace-123",
+    )
+    try:
+        assert get_trace_id() == "config-trace-123"
+    finally:
+        al.shutdown()
