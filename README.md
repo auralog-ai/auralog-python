@@ -54,6 +54,7 @@ logging.info("payment processed", extra={"order_id": "abc"})
 | `endpoint` | `str` | `https://ingest.auralog.ai` | Ingest endpoint override |
 | `flush_interval` | `float` | `5.0` | Seconds between batched flushes (errors flush immediately) |
 | `capture_errors` | `bool` | `True` | Capture uncaught exceptions (main thread, threads, asyncio) |
+| `trace_id` | `str` | _auto-generated_ | Custom trace ID for distributed tracing |
 
 ## Attaching a traceback
 
