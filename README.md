@@ -55,6 +55,48 @@ logging.info("payment processed", extra={"order_id": "abc"})
 | `flush_interval` | `float` | `5.0` | Seconds between batched flushes (errors flush immediately) |
 | `capture_errors` | `bool` | `True` | Capture uncaught exceptions (main thread, threads, asyncio) |
 | `trace_id` | `str` | _auto-generated_ | Custom trace ID for distributed tracing |
+| `global_metadata` | `dict[str, Any]` or `Callable[[], dict[str, Any]]` | `None` | Baseline metadata merged into every emitted log entry. Per-call `metadata` keys win on collision (shallow merge). Synchronous suppliers only. |
+
+## Attaching session-scoped fields to every log (`global_metadata`)
+
+To pin fields like `user_id`, `tenant`, or a feature-flag snapshot onto **every** log entry — including framework-bridge captures (`AuralogHandler`) and uncaught-error captures — pass `global_metadata` to `init`. Two forms are supported:
+
+**Static dict** — for values that don't change over the process lifetime:
+
+```python
+init(api_key="aura_your_key", global_metadata={"service": "billing", "region": "us-east"})
+```
+
+**Callable supplier** — invoked at every emit, so values can change over time. This is the canonical recipe for attaching the current user to every log:
+
+```python
+from contextvars import ContextVar
+from auralog import init, auralog
+
+current_user: ContextVar[str | None] = ContextVar("current_user", default=None)
+
+def session_metadata() -> dict[str, object]:
+    return {"user_id": current_user.get()}
+
+init(api_key="aura_your_key", global_metadata=session_metadata)
+
+# Anywhere a request handler sets the user, every subsequent log carries it:
+current_user.set("u_123")
+auralog.info("checkout completed")
+# -> metadata = {"user_id": "u_123"}
+```
+
+Per-call metadata still wins on collision, so impersonation and admin actions can override:
+
+```python
+auralog.info("admin override", metadata={"user_id": "admin_7"})  # admin_7, not u_123
+```
+
+**Caveats:**
+- The supplier runs on **every** emit — keep it O(1) cheap. Don't hit a database or do I/O.
+- **Synchronous only.** If your supplier is an `async def`, or returns a coroutine/awaitable, the entry is emitted without `global_metadata` and a one-time warning is logged. Cache async state into a `ContextVar` or thread-local from the sync side.
+- If the supplier raises, the entry is still emitted (without `global_metadata`) — logging never crashes the host.
+- Non-JSON-serializable values are dropped (with a one-time warning); the entry still ships with per-call metadata.
 
 ## Attaching a traceback
 
