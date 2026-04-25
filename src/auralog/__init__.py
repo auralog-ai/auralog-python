@@ -14,12 +14,20 @@ import atexit
 from typing import Any
 
 from . import _state
-from .config import AuralogConfig
+from .config import AuralogConfig, GlobalMetadata
 from .handler import AuralogHandler
 from .logger import Logger
 from .transport import Transport
 
-__all__ = ["AuralogHandler", "auralog", "get_trace_id", "init", "set_trace_id", "shutdown"]
+__all__ = [
+    "AuralogHandler",
+    "GlobalMetadata",
+    "auralog",
+    "get_trace_id",
+    "init",
+    "set_trace_id",
+    "shutdown",
+]
 
 
 def init(
@@ -30,10 +38,17 @@ def init(
     flush_interval: float = 5.0,
     capture_errors: bool = True,
     trace_id: str | None = None,
+    global_metadata: GlobalMetadata | None = None,
 ) -> None:
     """
     Initialize the SDK. Idempotent — calling `init` again replaces the prior config
     and flushes the previous transport.
+
+    `global_metadata`: optional baseline metadata merged into every log entry
+    before transport. Accepts either a static `dict[str, Any]` or a zero-arg
+    callable returning `dict[str, Any]` (invoked at every emit for late binding).
+    Per-call `metadata` keys win on collision. Synchronous only — coroutine
+    returns are treated as failure and the entry ships without global_metadata.
     """
     shutdown()
 
@@ -44,13 +59,19 @@ def init(
         flush_interval=flush_interval,
         capture_errors=capture_errors,
         trace_id=trace_id,
+        global_metadata=global_metadata,
     )
     transport = Transport(
         api_key=cfg.api_key,
         endpoint=cfg.endpoint,
         flush_interval=cfg.flush_interval,
     )
-    logger = Logger(environment=cfg.environment, sink=transport.send, trace_id=cfg.trace_id)
+    logger = Logger(
+        environment=cfg.environment,
+        sink=transport.send,
+        trace_id=cfg.trace_id,
+        global_metadata=cfg.global_metadata,
+    )
 
     _state.transport = transport
     _state.logger = logger
