@@ -52,3 +52,26 @@ def test_config_strips_trailing_slash_before_scheme_check():
 def test_config_max_queue_size_override():
     cfg = AuralogConfig(api_key="k", max_queue_size=42)
     assert cfg.max_queue_size == 42
+
+
+def test_config_rejects_zero_max_queue_size():
+    # `deque(maxlen=0)` would silently swallow every non-error log; surface
+    # the misconfiguration up front instead of quietly losing data.
+    with pytest.raises(ValueError, match="max_queue_size"):
+        AuralogConfig(api_key="k", max_queue_size=0)
+
+
+def test_config_rejects_negative_max_queue_size():
+    with pytest.raises(ValueError, match="max_queue_size"):
+        AuralogConfig(api_key="k", max_queue_size=-1)
+
+
+def test_config_accepts_uppercase_https_scheme():
+    # Per RFC 3986 §3.1 URI schemes are case-insensitive.
+    cfg = AuralogConfig(api_key="k", endpoint="HTTPS://ingest.example.com")
+    assert cfg.endpoint == "HTTPS://ingest.example.com"
+
+
+def test_config_accepts_mixed_case_https_scheme():
+    cfg = AuralogConfig(api_key="k", endpoint="HtTpS://ingest.example.com")
+    assert cfg.endpoint == "HtTpS://ingest.example.com"

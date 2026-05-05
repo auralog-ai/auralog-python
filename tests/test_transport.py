@@ -99,9 +99,14 @@ def test_buffer_drops_oldest_when_capped(httpx_mock):
     transport.shutdown()
 
 
-def test_endpoint_trailing_slash_is_stripped(httpx_mock):
+def test_endpoint_trailing_slash_is_stripped_via_config(httpx_mock):
+    # Endpoint normalization is the Config layer's responsibility now;
+    # Transport trusts that the endpoint it receives is already clean.
+    from auralog.config import AuralogConfig
+
+    cfg = AuralogConfig(api_key="k", endpoint="http://fake/", allow_insecure_endpoint=True)
     httpx_mock.add_response(url="http://fake/v1/logs/single", method="POST", status_code=200)
-    t = Transport(api_key="k", endpoint="http://fake/", flush_interval=60.0)
+    t = Transport(api_key="k", endpoint=cfg.endpoint, flush_interval=60.0)
     t.send(_entry(LogLevel.ERROR, "boom"))
     t.shutdown()
     reqs = httpx_mock.get_requests()

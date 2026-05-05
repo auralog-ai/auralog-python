@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterable
 from typing import Any
 
 from .logger import Logger
@@ -63,7 +64,7 @@ class AuralogHandler(logging.Handler):
         logger: Logger | None = None,
         level: int = logging.NOTSET,
         *,
-        metadata_allowlist: set[str] | frozenset[str] | None = None,
+        metadata_allowlist: Iterable[str] | None = None,
     ) -> None:
         super().__init__(level=level)
         self._logger = logger

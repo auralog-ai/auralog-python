@@ -31,7 +31,9 @@ class Transport:
         max_queue_size: int = DEFAULT_MAX_QUEUE_SIZE,
     ) -> None:
         self._api_key = api_key
-        self._endpoint = endpoint.rstrip("/")
+        # `AuralogConfig.__post_init__` already strips trailing slashes; keep
+        # this assignment as-is and rely on that normalization.
+        self._endpoint = endpoint
         self._flush_interval = flush_interval
         # `deque(maxlen=...)` gives us drop-oldest semantics for free: appending
         # to a full deque evicts from the left.

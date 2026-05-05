@@ -40,9 +40,19 @@ class AuralogConfig:
         # Normalize before validating so trailing-slash variations don't slip
         # past the scheme check.
         self.endpoint = self.endpoint.rstrip("/")
-        if not self.allow_insecure_endpoint and not self.endpoint.startswith("https://"):
+        # Per RFC 3986 §3.1, URI schemes are case-insensitive. Lowercase the
+        # scheme prefix before comparison so `HTTPS://...` isn't wrongly
+        # rejected as plaintext.
+        if not self.allow_insecure_endpoint and not self.endpoint.lower().startswith("https://"):
             raise ValueError(
                 "auralog: endpoint must use https:// "
                 f"(got {self.endpoint!r}). Pass allow_insecure_endpoint=True to "
                 "opt in to plaintext (e.g. for a local development ingest)."
+            )
+        # `max_queue_size <= 0` would silently swallow every non-error log
+        # (`deque(maxlen=0)` accepts appends but discards them immediately).
+        # Reject up front so the failure mode is loud rather than invisible.
+        if self.max_queue_size <= 0:
+            raise ValueError(
+                f"auralog: max_queue_size must be a positive integer (got {self.max_queue_size!r})."
             )
