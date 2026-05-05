@@ -7,6 +7,7 @@ from typing import Any
 DEFAULT_ENDPOINT = "https://ingest.auralog.ai"
 DEFAULT_FLUSH_INTERVAL_SECONDS = 5.0
 DEFAULT_ENVIRONMENT = "production"
+DEFAULT_MAX_QUEUE_SIZE = 1000
 
 # A baseline metadata map merged into every emitted log entry. Accepts either:
 #   - a static `dict[str, Any]` (resolved once when set), or
@@ -25,3 +26,23 @@ class AuralogConfig:
     capture_errors: bool = True
     trace_id: str | None = None
     global_metadata: GlobalMetadata | None = field(default=None)
+    # Maximum number of buffered (non-error) log entries held in memory while
+    # waiting for the next flush. When the buffer would exceed this size the
+    # oldest entries are dropped first so an unreachable ingest endpoint can
+    # never OOM the host process. Errors bypass the buffer entirely.
+    max_queue_size: int = DEFAULT_MAX_QUEUE_SIZE
+    # Reject endpoints that aren't `https://...` unless this is explicitly True.
+    # Prevents a misconfigured `endpoint=http://...` from silently downgrading
+    # every POST to plaintext.
+    allow_insecure_endpoint: bool = False
+
+    def __post_init__(self) -> None:
+        # Normalize before validating so trailing-slash variations don't slip
+        # past the scheme check.
+        self.endpoint = self.endpoint.rstrip("/")
+        if not self.allow_insecure_endpoint and not self.endpoint.startswith("https://"):
+            raise ValueError(
+                "auralog: endpoint must use https:// "
+                f"(got {self.endpoint!r}). Pass allow_insecure_endpoint=True to "
+                "opt in to plaintext (e.g. for a local development ingest)."
+            )

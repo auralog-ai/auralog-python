@@ -58,9 +58,24 @@ class AuralogHandler(logging.Handler):
     If `logger` is not provided, uses the module-level auralog Logger set up by init().
     """
 
-    def __init__(self, logger: Logger | None = None, level: int = logging.NOTSET) -> None:
+    def __init__(
+        self,
+        logger: Logger | None = None,
+        level: int = logging.NOTSET,
+        *,
+        metadata_allowlist: set[str] | frozenset[str] | None = None,
+    ) -> None:
         super().__init__(level=level)
         self._logger = logger
+        # When set, `_extract_metadata` ships ONLY these keys from the
+        # underlying `LogRecord.__dict__`, regardless of `_RESERVED`. This
+        # closes the gap where a custom `extra={"auth_token": ...}` would
+        # flow into the wire payload because the denylist can't anticipate
+        # every host-side attribute name. Default `None` preserves the prior
+        # denylist-only behavior for backwards compatibility.
+        self._metadata_allowlist: frozenset[str] | None = (
+            frozenset(metadata_allowlist) if metadata_allowlist is not None else None
+        )
 
     def _resolve_logger(self) -> Logger | None:
         if self._logger is not None:
@@ -99,4 +114,7 @@ class AuralogHandler(logging.Handler):
             self.handleError(record)
 
     def _extract_metadata(self, record: logging.LogRecord) -> dict[str, Any]:
-        return {k: v for k, v in record.__dict__.items() if k not in _RESERVED}
+        if self._metadata_allowlist is not None:
+            allowed = self._metadata_allowlist
+            return {key: value for key, value in record.__dict__.items() if key in allowed}
+        return {key: value for key, value in record.__dict__.items() if key not in _RESERVED}

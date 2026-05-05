@@ -22,6 +22,7 @@ def test_init_enables_logging(httpx_mock):
         endpoint="http://fake",
         flush_interval=60.0,
         capture_errors=False,
+        allow_insecure_endpoint=True,
     )
     try:
         al.auralog.info("hi")
@@ -44,6 +45,7 @@ def test_second_init_replaces_previous(httpx_mock):
         endpoint="http://fake",
         flush_interval=60.0,
         capture_errors=False,
+        allow_insecure_endpoint=True,
     )
     al.auralog.info("first")
 
@@ -53,6 +55,7 @@ def test_second_init_replaces_previous(httpx_mock):
         endpoint="http://fake2",
         flush_interval=60.0,
         capture_errors=False,
+        allow_insecure_endpoint=True,
     )
     al.auralog.info("second")
 
@@ -72,6 +75,7 @@ def test_get_trace_id_returns_uuid_after_init(httpx_mock):
         endpoint="http://fake",
         flush_interval=60.0,
         capture_errors=False,
+        allow_insecure_endpoint=True,
     )
     try:
         tid = get_trace_id()
@@ -88,6 +92,7 @@ def test_set_trace_id_changes_trace_id(httpx_mock):
         endpoint="http://fake",
         flush_interval=60.0,
         capture_errors=False,
+        allow_insecure_endpoint=True,
     )
     try:
         set_trace_id("custom-trace")
@@ -109,6 +114,7 @@ def test_trace_id_from_config(httpx_mock):
         endpoint="http://fake",
         flush_interval=60.0,
         capture_errors=False,
+        allow_insecure_endpoint=True,
         trace_id="config-trace-123",
     )
     try:

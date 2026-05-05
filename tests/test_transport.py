@@ -50,7 +50,9 @@ def test_network_error_is_swallowed(httpx_mock):
 
 def test_concurrent_send_does_not_corrupt_buffer(httpx_mock):
     httpx_mock.add_response(url="http://fake/v1/logs", method="POST", status_code=200)
-    t = Transport(api_key="k", endpoint="http://fake", flush_interval=60.0)
+    # Workers push 10 * 200 = 2000 entries; bump the cap above the default
+    # 1000 so this test exercises buffer integrity, not eviction.
+    t = Transport(api_key="k", endpoint="http://fake", flush_interval=60.0, max_queue_size=5000)
 
     def worker():
         for _ in range(200):
@@ -76,6 +78,25 @@ def test_shutdown_flushes_pending(httpx_mock):
     t.send(_entry(LogLevel.INFO, "hi"))
     t.shutdown()
     assert len(httpx_mock.get_requests()) == 1
+
+
+def test_buffer_drops_oldest_when_capped(httpx_mock):
+    httpx_mock.add_response(url="http://fake/v1/logs", method="POST", status_code=200)
+    transport = Transport(
+        api_key="k", endpoint="http://fake", flush_interval=60.0, max_queue_size=3
+    )
+    # Push 5 entries into a buffer that holds 3 — the oldest two ("0" and "1")
+    # must be evicted.
+    for index in range(5):
+        transport.send(_entry(LogLevel.INFO, str(index)))
+
+    transport.flush()
+    requests = httpx_mock.get_requests()
+    assert len(requests) == 1
+    body = json.loads(requests[0].read().decode())
+    messages = [log["message"] for log in body["logs"]]
+    assert messages == ["2", "3", "4"]
+    transport.shutdown()
 
 
 def test_endpoint_trailing_slash_is_stripped(httpx_mock):

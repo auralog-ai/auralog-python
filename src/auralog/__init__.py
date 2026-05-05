@@ -14,7 +14,7 @@ import atexit
 from typing import Any
 
 from . import _state
-from .config import AuralogConfig, GlobalMetadata
+from .config import DEFAULT_MAX_QUEUE_SIZE, AuralogConfig, GlobalMetadata
 from .handler import AuralogHandler
 from .logger import Logger
 from .transport import Transport
@@ -39,6 +39,8 @@ def init(
     capture_errors: bool = True,
     trace_id: str | None = None,
     global_metadata: GlobalMetadata | None = None,
+    max_queue_size: int = DEFAULT_MAX_QUEUE_SIZE,
+    allow_insecure_endpoint: bool = False,
 ) -> None:
     """
     Initialize the SDK. Idempotent — calling `init` again replaces the prior config
@@ -60,11 +62,14 @@ def init(
         capture_errors=capture_errors,
         trace_id=trace_id,
         global_metadata=global_metadata,
+        max_queue_size=max_queue_size,
+        allow_insecure_endpoint=allow_insecure_endpoint,
     )
     transport = Transport(
         api_key=cfg.api_key,
         endpoint=cfg.endpoint,
         flush_interval=cfg.flush_interval,
+        max_queue_size=cfg.max_queue_size,
     )
     logger = Logger(
         environment=cfg.environment,
