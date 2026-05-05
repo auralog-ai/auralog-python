@@ -45,6 +45,21 @@ logging.getLogger().setLevel(logging.INFO)
 logging.info("payment processed", extra={"order_id": "abc"})
 ```
 
+### Restricting which `extra` fields ship (`metadata_allowlist`)
+
+By default `AuralogHandler` forwards every key from the underlying `LogRecord.__dict__` minus a curated denylist of stdlib fields. If your codebase passes sensitive values via `extra={...}` (auth tokens, raw PII, internal IDs) and you'd rather opt-in than opt-out, pass an explicit allowlist:
+
+```python
+logging.getLogger().addHandler(
+    AuralogHandler(metadata_allowlist={"user_id", "tenant", "request_id"})
+)
+
+# Only "user_id" reaches the wire — "auth_token" is dropped.
+logging.info("user fetched", extra={"user_id": "u_1", "auth_token": "secret"})
+```
+
+When `metadata_allowlist` is set, only the named keys are included; default behavior (denylist of stdlib fields) is preserved when it is omitted.
+
 ## Configuration
 
 | Option | Type | Default | Description |
@@ -56,6 +71,8 @@ logging.info("payment processed", extra={"order_id": "abc"})
 | `capture_errors` | `bool` | `True` | Capture uncaught exceptions (main thread, threads, asyncio) |
 | `trace_id` | `str` | _auto-generated_ | Custom trace ID for distributed tracing |
 | `global_metadata` | `dict[str, Any]` or `Callable[[], dict[str, Any]]` | `None` | Baseline metadata merged into every emitted log entry. Per-call `metadata` keys win on collision (shallow merge). Synchronous suppliers only. |
+| `max_queue_size` | `int` | `1000` | Maximum buffered (non-error) log entries held in memory between flushes. When the buffer is full, the oldest entries are dropped first so an unreachable ingest endpoint can't OOM the host process. Errors bypass the buffer. |
+| `allow_insecure_endpoint` | `bool` | `False` | Permit a non-`https://` `endpoint`. Off by default so a misconfigured `endpoint=http://...` can't silently downgrade every POST to plaintext. Opt in for local development ingests only. |
 
 ## Attaching session-scoped fields to every log (`global_metadata`)
 

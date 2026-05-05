@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import contextlib
 import threading
+from collections import deque
 
 import httpx
 
+from .config import DEFAULT_MAX_QUEUE_SIZE
 from .types import LogEntry, LogLevel, is_at_or_above
 
 
@@ -15,13 +17,27 @@ class Transport:
     - Buffers non-error logs; a daemon background thread flushes every `flush_interval`.
     - Errors (`LogLevel.ERROR` and above) are sent immediately on a separate endpoint.
     - Network failures are swallowed so a log send never crashes the host app.
+    - The in-memory buffer is bounded by `max_queue_size`; if the ingest
+      endpoint is unreachable for long enough that the buffer fills, the
+      oldest entries are dropped first so the host process can't OOM.
     """
 
-    def __init__(self, *, api_key: str, endpoint: str, flush_interval: float) -> None:
+    def __init__(
+        self,
+        *,
+        api_key: str,
+        endpoint: str,
+        flush_interval: float,
+        max_queue_size: int = DEFAULT_MAX_QUEUE_SIZE,
+    ) -> None:
         self._api_key = api_key
-        self._endpoint = endpoint.rstrip("/")
+        # `AuralogConfig.__post_init__` already strips trailing slashes; keep
+        # this assignment as-is and rely on that normalization.
+        self._endpoint = endpoint
         self._flush_interval = flush_interval
-        self._buffer: list[LogEntry] = []
+        # `deque(maxlen=...)` gives us drop-oldest semantics for free: appending
+        # to a full deque evicts from the left.
+        self._buffer: deque[LogEntry] = deque(maxlen=max_queue_size)
         self._lock = threading.Lock()
         self._client = httpx.Client(timeout=5.0)
         self._stopped = threading.Event()
@@ -54,8 +70,8 @@ class Transport:
         with self._lock:
             if not self._buffer:
                 return
-            batch = self._buffer
-            self._buffer = []
+            batch = list(self._buffer)
+            self._buffer.clear()
         # Swallow network blips so a single send failure doesn't crash the host.
         with contextlib.suppress(Exception):
             self._client.post(

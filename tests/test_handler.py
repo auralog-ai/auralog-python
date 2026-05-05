@@ -94,3 +94,42 @@ def test_handler_does_not_leak_reserved_logrecord_fields_into_metadata():
     assert "custom" in md
     for reserved in ("message", "asctime", "levelname", "name"):
         assert reserved not in md
+
+
+def test_handler_metadata_allowlist_ships_only_named_keys():
+    captured: list[LogEntry] = []
+    log = Logger(environment="prod", sink=captured.append)
+    handler = AuralogHandler(logger=log, metadata_allowlist={"user_id"})
+    pylogger = logging.getLogger("test_handler_allowlist")
+    pylogger.handlers = [handler]
+    pylogger.setLevel(logging.INFO)
+
+    pylogger.info(
+        "hi",
+        extra={"user_id": "u_1", "auth_token": "secret", "tenant": "acme"},
+    )
+
+    md = captured[0].metadata or {}
+    assert md == {"user_id": "u_1"}
+    # Custom-but-not-allowlisted attributes (the whole class of leak this
+    # option exists to prevent) must not appear.
+    assert "auth_token" not in md
+    assert "tenant" not in md
+
+
+def test_handler_metadata_allowlist_excludes_stdlib_logrecord_fields():
+    """Allowlist takes precedence over the default denylist semantics — only
+    the explicitly named keys ship, including for stdlib LogRecord fields."""
+    captured: list[LogEntry] = []
+    log = Logger(environment="prod", sink=captured.append)
+    handler = AuralogHandler(logger=log, metadata_allowlist={"user_id"})
+    pylogger = logging.getLogger("test_handler_allowlist_strict")
+    pylogger.handlers = [handler]
+    pylogger.setLevel(logging.INFO)
+
+    pylogger.info("hi", extra={"user_id": "u_1"})
+
+    md = captured[0].metadata or {}
+    assert "user_id" in md
+    for stdlib_key in ("levelname", "msg", "name", "pathname", "lineno"):
+        assert stdlib_key not in md
