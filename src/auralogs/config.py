@@ -54,5 +54,6 @@ class AuralogsConfig:
         # Reject up front so the failure mode is loud rather than invisible.
         if self.max_queue_size <= 0:
             raise ValueError(
-                f"auralogs: max_queue_size must be a positive integer (got {self.max_queue_size!r})."
+                "auralogs: max_queue_size must be a positive integer "
+                f"(got {self.max_queue_size!r})."
             )
