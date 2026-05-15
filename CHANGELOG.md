@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - from auralog import init, info, error, shutdown
   + from auralogs import init, info, error, shutdown
   ```
-- Default ingest endpoint updated `https://ingest.auralog.ai` → `https://ingest.auralogs.ai`.
+- Default ingest endpoint updated `https://ingest.auralogs.ai` → `https://ingest.auralogs.ai`.
 - Repository moved to https://github.com/auralogs-ai/auralogs-python.
 
 ### Migration

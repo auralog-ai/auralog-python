@@ -29,8 +29,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://auralog.ai"
-Documentation = "https://docs.auralog.ai"
+Homepage = "https://auralogs.ai"
+Documentation = "https://docs.auralogs.ai"
 Repository = "https://github.com/auralog-ai/auralog-python"
 Issues = "https://github.com/auralog-ai/auralog-python/issues"
 Changelog = "https://github.com/auralog-ai/auralog-python/blob/main/CHANGELOG.md"
