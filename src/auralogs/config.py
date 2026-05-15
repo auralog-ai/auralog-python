@@ -4,7 +4,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
-DEFAULT_ENDPOINT = "https://ingest.auralog.ai"
+DEFAULT_ENDPOINT = "https://ingest.auralogs.ai"
 DEFAULT_FLUSH_INTERVAL_SECONDS = 5.0
 DEFAULT_ENVIRONMENT = "production"
 DEFAULT_MAX_QUEUE_SIZE = 1000
@@ -18,7 +18,7 @@ GlobalMetadata = dict[str, Any] | Callable[[], dict[str, Any]]
 
 
 @dataclass
-class AuralogConfig:
+class AuralogsConfig:
     api_key: str
     environment: str = DEFAULT_ENVIRONMENT
     endpoint: str = DEFAULT_ENDPOINT
@@ -45,7 +45,7 @@ class AuralogConfig:
         # rejected as plaintext.
         if not self.allow_insecure_endpoint and not self.endpoint.lower().startswith("https://"):
             raise ValueError(
-                "auralog: endpoint must use https:// "
+                "auralogs: endpoint must use https:// "
                 f"(got {self.endpoint!r}). Pass allow_insecure_endpoint=True to "
                 "opt in to plaintext (e.g. for a local development ingest)."
             )
@@ -54,5 +54,5 @@ class AuralogConfig:
         # Reject up front so the failure mode is loud rather than invisible.
         if self.max_queue_size <= 0:
             raise ValueError(
-                f"auralog: max_queue_size must be a positive integer (got {self.max_queue_size!r})."
+                f"auralogs: max_queue_size must be a positive integer (got {self.max_queue_size!r})."
             )

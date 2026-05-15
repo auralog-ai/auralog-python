@@ -5,8 +5,8 @@ import threading
 
 import httpx
 
-from auralog.transport import Transport
-from auralog.types import LogEntry, LogLevel
+from auralogs.transport import Transport
+from auralogs.types import LogEntry, LogLevel
 
 
 def _entry(level: LogLevel = LogLevel.INFO, message: str = "m") -> LogEntry:
@@ -102,9 +102,9 @@ def test_buffer_drops_oldest_when_capped(httpx_mock):
 def test_endpoint_trailing_slash_is_stripped_via_config(httpx_mock):
     # Endpoint normalization is the Config layer's responsibility now;
     # Transport trusts that the endpoint it receives is already clean.
-    from auralog.config import AuralogConfig
+    from auralogs.config import AuralogsConfig
 
-    cfg = AuralogConfig(api_key="k", endpoint="http://fake/", allow_insecure_endpoint=True)
+    cfg = AuralogsConfig(api_key="k", endpoint="http://fake/", allow_insecure_endpoint=True)
     httpx_mock.add_response(url="http://fake/v1/logs/single", method="POST", status_code=200)
     t = Transport(api_key="k", endpoint=cfg.endpoint, flush_interval=60.0)
     t.send(_entry(LogLevel.ERROR, "boom"))

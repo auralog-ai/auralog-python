@@ -15,7 +15,7 @@ from .types import LogEntry, LogLevel
 
 # Channel for internal SDK complaints. Kept separate from the user's root
 # logger so a misconfigured `global_metadata` supplier doesn't muddy app logs.
-_internal_logger = logging.getLogger("auralog")
+_internal_logger = logging.getLogger("auralogs")
 
 
 class Logger:
@@ -56,7 +56,7 @@ class Logger:
         if self._global_metadata_warned:
             return
         self._global_metadata_warned = True
-        _internal_logger.warning("auralog: %s", message)
+        _internal_logger.warning("auralogs: %s", message)
 
     def _resolve_global_metadata(self) -> dict[str, Any] | None:
         """

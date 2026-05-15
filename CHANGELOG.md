@@ -12,6 +12,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **HTTPS-only endpoints by default.** `AuralogConfig` now rejects an `endpoint` that doesn't start with `https://`. Pass `allow_insecure_endpoint=True` to opt in (e.g. for a local development ingest). Previously a misconfigured `endpoint=http://...` silently downgraded every POST to plaintext.
 - **Optional `metadata_allowlist` on `AuralogHandler`.** When set, only the named keys from `LogRecord.__dict__` are forwarded; default denylist behavior is preserved when it is omitted. Closes the gap where `extra={"auth_token": ...}` would flow into the wire payload because the denylist couldn't anticipate every host-side attribute name.
 
+## [1.0.0] - 2026-05-15
+
+### Changed
+
+- **BREAKING: Renamed package** `auralog` → `auralogs` on PyPI:
+  ```diff
+  - pip install auralog
+  + pip install auralogs
+  ```
+- **BREAKING: Renamed import path** `auralog` → `auralogs`:
+  ```diff
+  - from auralog import init, info, error, shutdown
+  + from auralogs import init, info, error, shutdown
+  ```
+- Default ingest endpoint updated `https://ingest.auralog.ai` → `https://ingest.auralogs.ai`.
+- Repository moved to https://github.com/auralogs-ai/auralogs-python.
+
+### Migration
+
+Replace the install + the import. Behavior is identical apart from the renamed package and module.
+
+The previous package `auralog@0.2.0` continues to work but is now deprecated and will not receive updates. New ingest traffic should use `https://ingest.auralogs.ai`.
+
 ## [0.2.0] - 2026-04-25
 
 ### Added

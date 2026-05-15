@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from auralog.logger import Logger
-from auralog.types import LogEntry, LogLevel
+from auralogs.logger import Logger
+from auralogs.types import LogEntry, LogLevel
 
 
 def test_logger_methods_emit_entries_with_correct_levels():

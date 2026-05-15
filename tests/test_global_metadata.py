@@ -7,7 +7,7 @@ Covers the eight cases mandated by the cross-SDK spec:
   3. Supplier that throws -> entry without global_metadata + one warn.
   4. Supplier returns awaitable/coroutine -> entry without global_metadata + warn.
   5. Per-call key overrides a global_metadata key on collision.
-  6. Framework-bridge-produced entries (AuralogHandler) carry global_metadata.
+  6. Framework-bridge-produced entries (AuralogsHandler) carry global_metadata.
   7. Error-capture-produced entries carry global_metadata.
   8. Non-serializable return value -> entry without global_metadata + warn,
      entry still delivered.
@@ -19,10 +19,10 @@ import logging
 import sys
 from typing import Any
 
-from auralog.error_capture import install_error_capture, uninstall_error_capture
-from auralog.handler import AuralogHandler
-from auralog.logger import Logger
-from auralog.types import LogEntry
+from auralogs.error_capture import install_error_capture, uninstall_error_capture
+from auralogs.handler import AuralogsHandler
+from auralogs.logger import Logger
+from auralogs.types import LogEntry
 
 
 def _make_logger(global_metadata: Any = None) -> tuple[Logger, list[LogEntry]]:
@@ -112,7 +112,7 @@ def test_supplier_raise_emits_entry_without_global_metadata(caplog):
 
     log, captured = _make_logger(global_metadata=bad_supplier)
 
-    with caplog.at_level(logging.WARNING, logger="auralog"):
+    with caplog.at_level(logging.WARNING, logger="auralogs"):
         log.info("first")
         log.info("second", metadata={"x": 1})
 
@@ -123,9 +123,9 @@ def test_supplier_raise_emits_entry_without_global_metadata(caplog):
     assert captured[1].metadata == {"x": 1}
 
     # Exactly one warn across the two failures.
-    auralog_warnings = [r for r in caplog.records if r.name == "auralog"]
-    assert len(auralog_warnings) == 1
-    assert "supplier raised" in auralog_warnings[0].getMessage()
+    auralogs_warnings = [r for r in caplog.records if r.name == "auralogs"]
+    assert len(auralogs_warnings) == 1
+    assert "supplier raised" in auralogs_warnings[0].getMessage()
 
 
 def test_supplier_raise_does_not_crash_host():
@@ -152,15 +152,15 @@ def test_async_supplier_function_treated_as_failure(caplog):
 
     log, captured = _make_logger(global_metadata=async_supplier)
 
-    with caplog.at_level(logging.WARNING, logger="auralog"):
+    with caplog.at_level(logging.WARNING, logger="auralogs"):
         log.info("hi")
         log.info("again")
 
     assert captured[0].metadata is None
     assert captured[1].metadata is None
-    auralog_warnings = [r for r in caplog.records if r.name == "auralog"]
-    assert len(auralog_warnings) == 1
-    assert "async" in auralog_warnings[0].getMessage().lower()
+    auralogs_warnings = [r for r in caplog.records if r.name == "auralogs"]
+    assert len(auralogs_warnings) == 1
+    assert "async" in auralogs_warnings[0].getMessage().lower()
 
 
 def test_supplier_returning_coroutine_treated_as_failure(caplog):
@@ -174,15 +174,15 @@ def test_supplier_returning_coroutine_treated_as_failure(caplog):
 
     log, captured = _make_logger(global_metadata=returns_coroutine)
 
-    with caplog.at_level(logging.WARNING, logger="auralog"):
+    with caplog.at_level(logging.WARNING, logger="auralogs"):
         log.info("hi")
 
     assert captured[0].metadata is None
-    auralog_warnings = [r for r in caplog.records if r.name == "auralog"]
-    assert len(auralog_warnings) == 1
+    auralogs_warnings = [r for r in caplog.records if r.name == "auralogs"]
+    assert len(auralogs_warnings) == 1
     assert (
-        "awaitable" in auralog_warnings[0].getMessage().lower()
-        or "coroutine" in auralog_warnings[0].getMessage().lower()
+        "awaitable" in auralogs_warnings[0].getMessage().lower()
+        or "coroutine" in auralogs_warnings[0].getMessage().lower()
     )
 
 
@@ -210,13 +210,13 @@ def test_shallow_merge_replaces_nested_value_wholesale():
 
 
 # ---------------------------------------------------------------------------
-# 6. Framework-bridge (AuralogHandler) entries carry global_metadata
+# 6. Framework-bridge (AuralogsHandler) entries carry global_metadata
 # ---------------------------------------------------------------------------
 
 
 def test_handler_emitted_entries_carry_global_metadata():
     log, captured = _make_logger(global_metadata=lambda: {"user_id": "u1"})
-    handler = AuralogHandler(logger=log)
+    handler = AuralogsHandler(logger=log)
     pylogger = logging.getLogger("test_handler_global_metadata")
     pylogger.handlers = [handler]
     pylogger.setLevel(logging.INFO)
@@ -230,7 +230,7 @@ def test_handler_emitted_entries_carry_global_metadata():
 
 def test_handler_emitted_entry_with_no_extra_still_carries_global():
     log, captured = _make_logger(global_metadata={"user_id": "u1"})
-    handler = AuralogHandler(logger=log)
+    handler = AuralogsHandler(logger=log)
     pylogger = logging.getLogger("test_handler_global_only")
     pylogger.handlers = [handler]
     pylogger.setLevel(logging.INFO)
@@ -277,7 +277,7 @@ def test_non_serializable_global_metadata_drops_global_keeps_per_call(caplog):
         global_metadata=lambda: {"obj": NotSerializable(), "user_id": "u1"}
     )
 
-    with caplog.at_level(logging.WARNING, logger="auralog"):
+    with caplog.at_level(logging.WARNING, logger="auralogs"):
         log.info("first", metadata={"order_id": "o1"})
         log.info("second")
 
@@ -287,9 +287,9 @@ def test_non_serializable_global_metadata_drops_global_keeps_per_call(caplog):
     assert captured[0].metadata == {"order_id": "o1"}
     assert captured[1].metadata is None
 
-    auralog_warnings = [r for r in caplog.records if r.name == "auralog"]
-    assert len(auralog_warnings) == 1
-    assert "serializable" in auralog_warnings[0].getMessage().lower()
+    auralogs_warnings = [r for r in caplog.records if r.name == "auralogs"]
+    assert len(auralogs_warnings) == 1
+    assert "serializable" in auralogs_warnings[0].getMessage().lower()
 
 
 def test_non_serializable_with_no_per_call_omits_metadata_entirely(caplog):
@@ -298,7 +298,7 @@ def test_non_serializable_with_no_per_call_omits_metadata_entirely(caplog):
 
     log, captured = _make_logger(global_metadata={"obj": NotSerializable()})
 
-    with caplog.at_level(logging.WARNING, logger="auralog"):
+    with caplog.at_level(logging.WARNING, logger="auralogs"):
         log.info("hi")
 
     # Per spec: both sides empty (per-call absent + global dropped) -> omit.
@@ -317,14 +317,14 @@ def test_warn_once_flag_is_per_instance(caplog):
     log_a, _ = _make_logger(global_metadata=bad_supplier)
     log_b, _ = _make_logger(global_metadata=bad_supplier)
 
-    with caplog.at_level(logging.WARNING, logger="auralog"):
+    with caplog.at_level(logging.WARNING, logger="auralogs"):
         log_a.info("a1")
         log_a.info("a2")  # silent
         log_b.info("b1")  # separate instance — should warn once
         log_b.info("b2")  # silent
 
-    auralog_warnings = [r for r in caplog.records if r.name == "auralog"]
-    assert len(auralog_warnings) == 2
+    auralogs_warnings = [r for r in caplog.records if r.name == "auralogs"]
+    assert len(auralogs_warnings) == 2
 
 
 # ---------------------------------------------------------------------------

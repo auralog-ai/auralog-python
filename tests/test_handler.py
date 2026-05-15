@@ -2,19 +2,19 @@ from __future__ import annotations
 
 import logging
 
-from auralog.handler import AuralogHandler
-from auralog.logger import Logger
-from auralog.types import LogEntry, LogLevel
+from auralogs.handler import AuralogsHandler
+from auralogs.logger import Logger
+from auralogs.types import LogEntry, LogLevel
 
 
-def _make_handler_with_capture() -> tuple[AuralogHandler, list[LogEntry]]:
+def _make_handler_with_capture() -> tuple[AuralogsHandler, list[LogEntry]]:
     captured: list[LogEntry] = []
     log = Logger(environment="prod", sink=captured.append)
-    handler = AuralogHandler(logger=log)
+    handler = AuralogsHandler(logger=log)
     return handler, captured
 
 
-def test_handler_maps_stdlib_levels_to_auralog_levels():
+def test_handler_maps_stdlib_levels_to_auralogs_levels():
     handler, captured = _make_handler_with_capture()
     pylogger = logging.getLogger("test_handler_levels")
     pylogger.handlers = [handler]
@@ -71,7 +71,7 @@ def test_handler_captures_exception_stack():
 
 def test_handler_silently_drops_when_uninitialized():
     """If the global logger is None, emit should not raise."""
-    handler = AuralogHandler()  # no explicit logger
+    handler = AuralogsHandler()  # no explicit logger
     record = logging.LogRecord(
         name="t",
         level=logging.INFO,
@@ -99,7 +99,7 @@ def test_handler_does_not_leak_reserved_logrecord_fields_into_metadata():
 def test_handler_metadata_allowlist_ships_only_named_keys():
     captured: list[LogEntry] = []
     log = Logger(environment="prod", sink=captured.append)
-    handler = AuralogHandler(logger=log, metadata_allowlist={"user_id"})
+    handler = AuralogsHandler(logger=log, metadata_allowlist={"user_id"})
     pylogger = logging.getLogger("test_handler_allowlist")
     pylogger.handlers = [handler]
     pylogger.setLevel(logging.INFO)
@@ -122,7 +122,7 @@ def test_handler_metadata_allowlist_excludes_stdlib_logrecord_fields():
     the explicitly named keys ship, including for stdlib LogRecord fields."""
     captured: list[LogEntry] = []
     log = Logger(environment="prod", sink=captured.append)
-    handler = AuralogHandler(logger=log, metadata_allowlist={"user_id"})
+    handler = AuralogsHandler(logger=log, metadata_allowlist={"user_id"})
     pylogger = logging.getLogger("test_handler_allowlist_strict")
     pylogger.handlers = [handler]
     pylogger.setLevel(logging.INFO)

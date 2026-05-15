@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import pytest
 
-import auralog as al
-from auralog import get_trace_id, set_trace_id
+import auralogs as al
+from auralogs import get_trace_id, set_trace_id
 
 
-def test_auralog_before_init_raises():
+def test_auralogs_before_init_raises():
     al.shutdown()
     with pytest.raises(RuntimeError, match="init"):
-        al.auralog.info("hi")
+        al.auralogs.info("hi")
 
 
 def test_init_enables_logging(httpx_mock):
@@ -25,8 +25,8 @@ def test_init_enables_logging(httpx_mock):
         allow_insecure_endpoint=True,
     )
     try:
-        al.auralog.info("hi")
-        al.auralog.error("boom")
+        al.auralogs.info("hi")
+        al.auralogs.error("boom")
     finally:
         al.shutdown()
 
@@ -47,7 +47,7 @@ def test_second_init_replaces_previous(httpx_mock):
         capture_errors=False,
         allow_insecure_endpoint=True,
     )
-    al.auralog.info("first")
+    al.auralogs.info("first")
 
     al.init(
         api_key="k",
@@ -57,7 +57,7 @@ def test_second_init_replaces_previous(httpx_mock):
         capture_errors=False,
         allow_insecure_endpoint=True,
     )
-    al.auralog.info("second")
+    al.auralogs.info("second")
 
     al.shutdown()
 

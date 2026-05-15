@@ -31,7 +31,7 @@ class Transport:
         max_queue_size: int = DEFAULT_MAX_QUEUE_SIZE,
     ) -> None:
         self._api_key = api_key
-        # `AuralogConfig.__post_init__` already strips trailing slashes; keep
+        # `AuralogsConfig.__post_init__` already strips trailing slashes; keep
         # this assignment as-is and rely on that normalization.
         self._endpoint = endpoint
         self._flush_interval = flush_interval
@@ -47,7 +47,7 @@ class Transport:
     def _start_background(self) -> None:
         self._thread = threading.Thread(
             target=self._run,
-            name="auralog-flush",
+            name="auralogs-flush",
             daemon=True,
         )
         self._thread.start()

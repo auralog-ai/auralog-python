@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "auralog"
-version = "0.2.0"
-description = "Auralog Python SDK — agentic logging and application awareness."
+name = "auralogs"
+version = "1.0.0"
+description = "Auralogs Python SDK — agentic logging and application awareness."
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [{ name = "James Thomas", email = "james.c.e.thomas@gmail.com" }]
@@ -44,7 +44,7 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/auralog"]
+packages = ["src/auralogs"]
 
 [tool.ruff]
 target-version = "py310"

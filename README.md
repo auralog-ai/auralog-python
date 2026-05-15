@@ -1,57 +1,57 @@
-# auralog
+# auralogs
 
-Python SDK for [Auralog](https://auralog.ai) — agentic logging and application awareness.
+Python SDK for [Auralogs](https://auralogs.ai) — agentic logging and application awareness.
 
-Auralog acts as an on-call engineer — powered by your choice of model (Claude, OpenAI, or any MCP-compatible LLM) — monitoring your logs and errors, alerting you when something's wrong, and opening fix PRs automatically.
+Auralogs acts as an on-call engineer — powered by your choice of model (Claude, OpenAI, or any MCP-compatible LLM) — monitoring your logs and errors, alerting you when something's wrong, and opening fix PRs automatically.
 
-[![PyPI version](https://img.shields.io/pypi/v/auralog.svg?label=pypi&color=blue)](https://pypi.org/project/auralog/)
-[![provenance verified](https://img.shields.io/badge/provenance-verified-2dba4e?logo=sigstore&logoColor=white)](https://pypi.org/project/auralog/)
-[![Python versions](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue.svg)](https://pypi.org/project/auralog/)
+[![PyPI version](https://img.shields.io/pypi/v/auralogs.svg?label=pypi&color=blue)](https://pypi.org/project/auralogs/)
+[![provenance verified](https://img.shields.io/badge/provenance-verified-2dba4e?logo=sigstore&logoColor=white)](https://pypi.org/project/auralogs/)
+[![Python versions](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue.svg)](https://pypi.org/project/auralogs/)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 ## Install
 
 ```bash
-pip install auralog
+pip install auralogs
 ```
 
 ## Quick start
 
 ```python
-from auralog import init, auralog
+from auralogs import init, auralogs
 
 init(api_key="aura_your_key", environment="production")
 
-auralog.info("user signed in", metadata={"user_id": "123"})
-auralog.error("payment failed", metadata={"order_id": "abc"})
+auralogs.info("user signed in", metadata={"user_id": "123"})
+auralogs.error("payment failed", metadata={"order_id": "abc"})
 ```
 
 Python 3.10+.
 
 ## Bridge the stdlib `logging` module (recommended for existing codebases)
 
-Python's `logging` module is used everywhere — including frameworks (Django, Flask, FastAPI) and libraries (requests, SQLAlchemy, Celery). `AuralogHandler` captures those logs without requiring code changes:
+Python's `logging` module is used everywhere — including frameworks (Django, Flask, FastAPI) and libraries (requests, SQLAlchemy, Celery). `AuralogsHandler` captures those logs without requiring code changes:
 
 ```python
 import logging
-from auralog import init, AuralogHandler
+from auralogs import init, AuralogsHandler
 
 init(api_key="aura_your_key", environment="production")
 
-logging.getLogger().addHandler(AuralogHandler())
+logging.getLogger().addHandler(AuralogsHandler())
 logging.getLogger().setLevel(logging.INFO)
 
-# Any existing logging.* calls — including from third-party libraries — flow to auralog
+# Any existing logging.* calls — including from third-party libraries — flow to auralogs
 logging.info("payment processed", extra={"order_id": "abc"})
 ```
 
 ### Restricting which `extra` fields ship (`metadata_allowlist`)
 
-By default `AuralogHandler` forwards every key from the underlying `LogRecord.__dict__` minus a curated denylist of stdlib fields. If your codebase passes sensitive values via `extra={...}` (auth tokens, raw PII, internal IDs) and you'd rather opt-in than opt-out, pass an explicit allowlist:
+By default `AuralogsHandler` forwards every key from the underlying `LogRecord.__dict__` minus a curated denylist of stdlib fields. If your codebase passes sensitive values via `extra={...}` (auth tokens, raw PII, internal IDs) and you'd rather opt-in than opt-out, pass an explicit allowlist:
 
 ```python
 logging.getLogger().addHandler(
-    AuralogHandler(metadata_allowlist={"user_id", "tenant", "request_id"})
+    AuralogsHandler(metadata_allowlist={"user_id", "tenant", "request_id"})
 )
 
 # Only "user_id" reaches the wire — "auth_token" is dropped.
@@ -64,9 +64,9 @@ When `metadata_allowlist` is set, only the named keys are included; default beha
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `api_key` | `str` | _required_ | Your Auralog project API key |
+| `api_key` | `str` | _required_ | Your Auralogs project API key |
 | `environment` | `str` | `"production"` | e.g. `"production"`, `"staging"`, `"dev"` |
-| `endpoint` | `str` | `https://ingest.auralog.ai` | Ingest endpoint override |
+| `endpoint` | `str` | `https://ingest.auralogs.ai` | Ingest endpoint override |
 | `flush_interval` | `float` | `5.0` | Seconds between batched flushes (errors flush immediately) |
 | `capture_errors` | `bool` | `True` | Capture uncaught exceptions (main thread, threads, asyncio) |
 | `trace_id` | `str` | _auto-generated_ | Custom trace ID for distributed tracing |
@@ -76,7 +76,7 @@ When `metadata_allowlist` is set, only the named keys are included; default beha
 
 ## Attaching session-scoped fields to every log (`global_metadata`)
 
-To pin fields like `user_id`, `tenant`, or a feature-flag snapshot onto **every** log entry — including framework-bridge captures (`AuralogHandler`) and uncaught-error captures — pass `global_metadata` to `init`. Two forms are supported:
+To pin fields like `user_id`, `tenant`, or a feature-flag snapshot onto **every** log entry — including framework-bridge captures (`AuralogsHandler`) and uncaught-error captures — pass `global_metadata` to `init`. Two forms are supported:
 
 **Static dict** — for values that don't change over the process lifetime:
 
@@ -88,7 +88,7 @@ init(api_key="aura_your_key", global_metadata={"service": "billing", "region": "
 
 ```python
 from contextvars import ContextVar
-from auralog import init, auralog
+from auralogs import init, auralogs
 
 current_user: ContextVar[str | None] = ContextVar("current_user", default=None)
 
@@ -99,14 +99,14 @@ init(api_key="aura_your_key", global_metadata=session_metadata)
 
 # Anywhere a request handler sets the user, every subsequent log carries it:
 current_user.set("u_123")
-auralog.info("checkout completed")
+auralogs.info("checkout completed")
 # -> metadata = {"user_id": "u_123"}
 ```
 
 Per-call metadata still wins on collision, so impersonation and admin actions can override:
 
 ```python
-auralog.info("admin override", metadata={"user_id": "admin_7"})  # admin_7, not u_123
+auralogs.info("admin override", metadata={"user_id": "admin_7"})  # admin_7, not u_123
 ```
 
 **Caveats:**
@@ -121,15 +121,15 @@ auralog.info("admin override", metadata={"user_id": "admin_7"})  # admin_7, not 
 try:
     risky()
 except Exception as e:
-    auralog.error("task crashed", metadata={"task": "ingest"}, exc_info=e)
+    auralogs.error("task crashed", metadata={"task": "ingest"}, exc_info=e)
 ```
 
 ## Graceful shutdown
 
-`auralog` flushes pending logs on interpreter exit automatically via `atexit`. For deterministic flush (serverless handlers, short-lived scripts):
+`auralogs` flushes pending logs on interpreter exit automatically via `atexit`. For deterministic flush (serverless handlers, short-lived scripts):
 
 ```python
-from auralog import shutdown
+from auralogs import shutdown
 shutdown()
 ```
 
@@ -143,11 +143,11 @@ shutdown()
 
 Every release is published with [sigstore provenance attestations](https://docs.pypi.org/trusted-publishers/) via GitHub Actions. The attestation proves the distribution was built from a specific commit in this repository — without having to trust PyPI or the maintainer.
 
-Inspect the attestation on [pypi.org/project/auralog](https://pypi.org/project/auralog/) under "Provenance".
+Inspect the attestation on [pypi.org/project/auralogs](https://pypi.org/project/auralogs/) under "Provenance".
 
 ## Documentation
 
-Full docs at [docs.auralog.ai](https://docs.auralog.ai/python-sdk/installation/).
+Full docs at [docs.auralogs.ai](https://docs.auralogs.ai/python-sdk/installation/).
 
 ## Security
 

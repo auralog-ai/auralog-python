@@ -1,18 +1,18 @@
-# Contributing to auralog (Python SDK)
+# Contributing to auralogs (Python SDK)
 
-Thanks for your interest in improving the Auralog Python SDK! This guide covers the basics.
+Thanks for your interest in improving the Auralogs Python SDK! This guide covers the basics.
 
 ## Scope
 
-This repo is the **Python SDK** only. For issues with the Auralog service itself (ingest, dashboard, analysis, billing), head to [auralog.ai](https://auralog.ai) or the [docs](https://docs.auralog.ai).
+This repo is the **Python SDK** only. For issues with the Auralogs service itself (ingest, dashboard, analysis, billing), head to [auralogs.ai](https://auralogs.ai) or the [docs](https://docs.auralogs.ai).
 
 ## Reporting bugs
 
-Open a [bug report](https://github.com/auralog-ai/auralog-python/issues/new?template=bug_report.yml). Include SDK version, Python version, minimal repro, expected vs. actual.
+Open a [bug report](https://github.com/auralogs-ai/auralogs-python/issues/new?template=bug_report.yml). Include SDK version, Python version, minimal repro, expected vs. actual.
 
 ## Suggesting features
 
-Open a [feature request](https://github.com/auralog-ai/auralog-python/issues/new?template=feature_request.yml). Describe the use case first, the proposed API second.
+Open a [feature request](https://github.com/auralogs-ai/auralogs-python/issues/new?template=feature_request.yml). Describe the use case first, the proposed API second.
 
 ## Security issues
 
@@ -23,8 +23,8 @@ Open a [feature request](https://github.com/auralog-ai/auralog-python/issues/new
 Requirements: Python 3.10 or later.
 
 ```bash
-git clone https://github.com/auralog-ai/auralog-python.git
-cd auralog-python
+git clone https://github.com/auralogs-ai/auralogs-python.git
+cd auralogs-python
 python3 -m venv .venv && source .venv/bin/activate
 pip install -U pip
 pip install -e ".[dev]"

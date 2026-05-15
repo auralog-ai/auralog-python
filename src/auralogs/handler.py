@@ -7,7 +7,7 @@ from typing import Any
 from .logger import Logger
 from .types import LogLevel
 
-# stdlib logging level -> auralog level
+# stdlib logging level -> auralogs level
 _LEVEL_MAP: dict[int, LogLevel] = {
     logging.DEBUG: LogLevel.DEBUG,
     logging.INFO: LogLevel.INFO,
@@ -46,17 +46,17 @@ _RESERVED: frozenset[str] = frozenset(
 )
 
 
-class AuralogHandler(logging.Handler):
+class AuralogsHandler(logging.Handler):
     """
-    stdlib logging.Handler that forwards records to the auralog Logger.
+    stdlib logging.Handler that forwards records to the auralogs Logger.
 
     Usage:
         import logging
-        from auralog import init, AuralogHandler
+        from auralogs import init, AuralogsHandler
         init(api_key="...", environment="prod")
-        logging.getLogger().addHandler(AuralogHandler())
+        logging.getLogger().addHandler(AuralogsHandler())
 
-    If `logger` is not provided, uses the module-level auralog Logger set up by init().
+    If `logger` is not provided, uses the module-level auralogs Logger set up by init().
     """
 
     def __init__(

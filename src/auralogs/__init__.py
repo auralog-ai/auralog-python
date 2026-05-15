@@ -1,11 +1,11 @@
 """
-Auralog — agentic logging and application awareness.
+Auralogs — agentic logging and application awareness.
 
 Public surface:
     init(api_key, environment, endpoint=..., flush_interval=..., capture_errors=...)
     shutdown()
-    auralog.debug / info / warn / error / fatal
-    AuralogHandler  (stdlib logging bridge)
+    auralogs.debug / info / warn / error / fatal
+    AuralogsHandler  (stdlib logging bridge)
 """
 
 from __future__ import annotations
@@ -14,15 +14,15 @@ import atexit
 from typing import Any
 
 from . import _state
-from .config import DEFAULT_MAX_QUEUE_SIZE, AuralogConfig, GlobalMetadata
-from .handler import AuralogHandler
+from .config import DEFAULT_MAX_QUEUE_SIZE, AuralogsConfig, GlobalMetadata
+from .handler import AuralogsHandler
 from .logger import Logger
 from .transport import Transport
 
 __all__ = [
-    "AuralogHandler",
+    "AuralogsHandler",
     "GlobalMetadata",
-    "auralog",
+    "auralogs",
     "get_trace_id",
     "init",
     "set_trace_id",
@@ -34,7 +34,7 @@ def init(
     *,
     api_key: str,
     environment: str = "production",
-    endpoint: str = "https://ingest.auralog.ai",
+    endpoint: str = "https://ingest.auralogs.ai",
     flush_interval: float = 5.0,
     capture_errors: bool = True,
     trace_id: str | None = None,
@@ -54,7 +54,7 @@ def init(
     """
     shutdown()
 
-    cfg = AuralogConfig(
+    cfg = AuralogsConfig(
         api_key=api_key,
         environment=environment,
         endpoint=endpoint,
@@ -108,7 +108,7 @@ def shutdown() -> None:
 
 def _require_logger() -> Logger:
     if _state.logger is None:
-        raise RuntimeError("auralog.init() must be called before using the logger")
+        raise RuntimeError("auralogs.init() must be called before using the logger")
     return _state.logger
 
 
@@ -122,7 +122,7 @@ def set_trace_id(trace_id: str) -> None:
     _require_logger().set_trace_id(trace_id)
 
 
-class _AuralogProxy:
+class _AuralogsProxy:
     """
     Call-site façade that delegates to the module-level Logger. Raises a clear
     RuntimeError if `init` hasn't been called — otherwise a missing init would
@@ -131,7 +131,7 @@ class _AuralogProxy:
 
     def _require(self) -> Logger:
         if _state.logger is None:
-            raise RuntimeError("auralog.init() must be called before using the logger")
+            raise RuntimeError("auralogs.init() must be called before using the logger")
         return _state.logger
 
     def debug(self, message: str, metadata: dict[str, Any] | None = None) -> None:
@@ -160,4 +160,4 @@ class _AuralogProxy:
         self._require().fatal(message, metadata, exc_info)
 
 
-auralog = _AuralogProxy()
+auralogs = _AuralogsProxy()

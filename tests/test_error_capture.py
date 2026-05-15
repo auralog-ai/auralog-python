@@ -3,9 +3,9 @@ from __future__ import annotations
 import sys
 import threading
 
-from auralog.error_capture import install_error_capture, uninstall_error_capture
-from auralog.logger import Logger
-from auralog.types import LogEntry
+from auralogs.error_capture import install_error_capture, uninstall_error_capture
+from auralogs.logger import Logger
+from auralogs.types import LogEntry
 
 
 def test_excepthook_captures_uncaught_main_thread():

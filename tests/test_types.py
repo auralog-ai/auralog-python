@@ -1,4 +1,4 @@
-from auralog.types import LogEntry, LogLevel, is_at_or_above
+from auralogs.types import LogEntry, LogLevel, is_at_or_above
 
 
 def test_log_level_ordering():
